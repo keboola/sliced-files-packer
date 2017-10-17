@@ -1,0 +1,5 @@
+.idea
+*.md
+build.xml
+.travis.yml
+.gitignore
