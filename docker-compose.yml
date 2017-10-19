@@ -3,7 +3,7 @@ services:
   dev:
     build: .
     image: keboola/sliced-files-packer
-    mem_limit: 64m
+    mem_limit: 128m
     tty: true
     stdin_open: true
     command: sh -c 'composer install && php vendor/bin/phpcs --standard=psr2 -n --ignore=vendor --extensions=php . && php vendor/bin/phpunit'

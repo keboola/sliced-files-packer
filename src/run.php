@@ -9,16 +9,18 @@ if (!isset($arguments["data"])) {
 }
 
 try {
-    print "Preparing merged file for upload";
+    print "Creating zip package.\n";
     $app = new \Keboola\SlicedFilesPacker\App();
     $app->run(
-        $arguments["data"] . "/in/tables",
+        $arguments["data"] . "/in/files",
         $arguments["data"] . "/out/files"
     );
-    print "Preparation done";
+    print "Zip package created.\n";
+} catch (\Keboola\SlicedFilesPacker\UserException $e) {
+    print $e->getMessage();
+    exit(1);
 } catch (\Exception $e) {
     print $e->getMessage();
     exit(2);
 }
-
 exit(0);
