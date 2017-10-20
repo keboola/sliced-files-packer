@@ -14,7 +14,6 @@ class AppTest extends TestCase
     {
         // create data dirs
         $fs = new Filesystem();
-        $finder = new Finder();
         $inputTablesDir = sys_get_temp_dir() . '/input';
         $outputFilesDir = sys_get_temp_dir() . '/output';
         $fs->mkdir([$inputTablesDir, $outputFilesDir]);
@@ -49,18 +48,26 @@ EOF
         $app = new App();
         $app->run($inputTablesDir, $outputFilesDir);
 
-        $foundFiles = $finder->files()->in($outputFilesDir);
-        $this->assertCount(1, $foundFiles);
-        $gzFiles = $foundFiles->name('*.zip');
-        $filesIterator = $gzFiles->getIterator();
+        $this->assertCount(2, (new Finder())->files()->in($outputFilesDir));
+        $zipFiles = (new Finder())->files()->name('*.zip')->in($outputFilesDir);
+        $this->assertCount(1, $zipFiles);
 
+        $filesIterator = $zipFiles->getIterator();
         $filesIterator->rewind();
-
         $zip = new \ZipArchive();
-
         if ($zip->open($filesIterator->current()->getRealPath()) !== true) {
             throw new \Exception('Cannot open created zip package.');
         }
         $this->assertEquals(2, $zip->numFiles);
+
+        // manifest
+        $manifestFiles = (new Finder())->files()->in($outputFilesDir)->name('*.manifest');
+        $this->assertCount(1, $manifestFiles);
+        $filesIterator = $manifestFiles->getIterator();
+        $filesIterator->rewind();
+
+        $manifest = json_decode(file_get_contents($filesIterator->current()->getRealPath()));
+        $this->assertNotEmpty($manifest->tags);
+        $this->assertContains(getenv('KBC_COMPONENTID'), $manifest->tags);
     }
 }

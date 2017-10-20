@@ -12,7 +12,6 @@ class FunctionalTest extends TestCase
     {
         // create data dirs
         $fs = new Filesystem();
-        $finder = new Finder();
         $dataDir = sys_get_temp_dir() . '/test-data';
         $fs->mkdir($dataDir);
         $fs->mkdir($dataDir . '/in');
@@ -55,9 +54,9 @@ EOF
 
         $this->assertEquals(0, $process->getExitCode());
 
-        $foundFiles = $finder->files()->in($outputFilesDir);
-        $this->assertCount(1, $foundFiles);
-        $gzFiles = $foundFiles->name('*.zip');
+        $foundFiles = (new Finder())->files()->in($outputFilesDir);
+        $this->assertCount(2, $foundFiles);
+        $gzFiles = (new Finder())->files()->in($outputFilesDir)->name('*.zip');
         $filesIterator = $gzFiles->getIterator();
 
         $filesIterator->rewind();
@@ -66,6 +65,16 @@ EOF
             throw new \Exception('Cannot open created zip package.');
         }
         $this->assertEquals(2, $zip->numFiles);
+
+        // manifest
+        $manifestFiles = (new Finder())->files()->in($outputFilesDir)->name('*.manifest');
+        $this->assertCount(1, $manifestFiles);
+        $filesIterator = $manifestFiles->getIterator();
+        $filesIterator->rewind();
+
+        $manifest = json_decode(file_get_contents($filesIterator->current()->getRealPath()));
+        $this->assertNotEmpty($manifest->tags);
+        $this->assertContains(getenv('KBC_COMPONENTID'), $manifest->tags);
     }
 
     public function testUserError()
