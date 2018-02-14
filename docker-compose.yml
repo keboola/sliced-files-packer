@@ -15,6 +15,7 @@ services:
              '
     volumes:
       - ./:/code
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
     environment:
       KBC_COMPONENTID: keboola.sliced-files-downloader
 

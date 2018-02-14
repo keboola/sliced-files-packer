@@ -3,6 +3,7 @@ MAINTAINER Martin Halamicek <martin@keboola.com>
 
 RUN apk add --no-cache wget git unzip gzip zlib-dev
 
+COPY ./docker/php/php-prod.ini /usr/local/etc/php/php.ini
 COPY . /code/
 WORKDIR /code/
 
