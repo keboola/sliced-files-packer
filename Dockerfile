@@ -1,5 +1,6 @@
 FROM php:7.1-alpine
-MAINTAINER Martin Halamicek <martin@keboola.com>
+
+ENV COMPOSER_ALLOW_SUPERUSER 1
 
 RUN apk add --no-cache wget git unzip gzip zlib-dev
 
