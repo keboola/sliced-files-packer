@@ -12,7 +12,7 @@ class FunctionalTest extends TestCase
     {
         // create data dirs
         $fs = new Filesystem();
-        $dataDir = sys_get_temp_dir() . '/test-data';
+        $dataDir = sys_get_temp_dir() . '/test-data' . uniqid();
         $fs->mkdir($dataDir);
         $fs->mkdir($dataDir . '/in');
         $fs->mkdir($dataDir . '/out');
@@ -81,7 +81,7 @@ EOF
     {
         // create data dirs
         $fs = new Filesystem();
-        $dataDir = sys_get_temp_dir() . '/test-data';
+        $dataDir = sys_get_temp_dir() . '/test-data' . uniqid();
         $fs->mkdir($dataDir);
         $fs->mkdir($dataDir . '/in');
         $fs->mkdir($dataDir . '/out');

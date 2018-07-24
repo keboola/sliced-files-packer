@@ -52,11 +52,21 @@ class App
 
     private function getDataFiles($inputFilesFolderPath, $fileId)
     {
-        return (new Finder())
+        $legacyFiles = (new Finder())
             ->files()
             ->in($inputFilesFolderPath)
             ->name(sprintf('%s_*', $fileId))
             ->notName('*.manifest');
+        $legacyFiles = iterator_to_array($legacyFiles);
+        try {
+            $newFiles = (new Finder())
+                ->files()
+                ->in($inputFilesFolderPath . '/' . sprintf('%s_*', $fileId));
+            $newFiles = iterator_to_array($newFiles);
+        } catch (\InvalidArgumentException $e) {
+            $newFiles = [];
+        }
+        return array_merge($legacyFiles, $newFiles);
     }
 
     private function createManifestFile($zipFilePath)
