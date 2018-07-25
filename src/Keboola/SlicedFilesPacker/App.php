@@ -22,10 +22,18 @@ class App
         $zip->open($zipFilePath, \ZipArchive::CREATE);
 
         foreach ($this->getDataFiles($inputFilesFolderPath, $fileManifest->id) as $dataFile) {
-            if (!$zip->addFile($dataFile->getRealPath(), $dataFile->getRelativePathname())) {
-                throw new \Exception(
-                    sprintf('Cannot add %s to package', $dataFile->getRealPath())
-                );
+            if ($dataFile->isDir()) {
+                if (!$zip->addEmptyDir($dataFile->getFilename())) {
+                    throw new \Exception(
+                        sprintf('Cannot add %s to package', $dataFile->getRealPath())
+                    );
+                }
+            } else {
+                if (!$zip->addFile($dataFile->getRealPath(), $dataFile->getRelativePathname())) {
+                    throw new \Exception(
+                        sprintf('Cannot add %s to package', $dataFile->getRealPath())
+                    );
+                }
             }
         }
         $zip->close();
@@ -53,8 +61,10 @@ class App
     private function getDataFiles($inputFilesFolderPath, $fileId) : Finder
     {
         $newFiles = (new Finder())
-            ->files()
-            ->in($inputFilesFolderPath . '/' . sprintf('%s_*', $fileId));
+            ->in($inputFilesFolderPath)
+            ->notName('*.manifest')
+            ->path($fileId)
+        ;
         return $newFiles;
     }
 

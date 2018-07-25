@@ -57,7 +57,56 @@ EOF
         if ($zip->open($filesIterator->current()->getRealPath()) !== true) {
             throw new \Exception('Cannot open created zip package.');
         }
-        $this->assertEquals(2, $zip->numFiles);
+        $this->assertEquals(3, $zip->numFiles);
+
+        // manifest
+        $manifestFiles = (new Finder())->files()->in($outputFilesDir)->name('*.manifest');
+        $this->assertCount(1, $manifestFiles);
+        $filesIterator = $manifestFiles->getIterator();
+        $filesIterator->rewind();
+
+        $manifest = json_decode(file_get_contents($filesIterator->current()->getRealPath()));
+        $this->assertNotEmpty($manifest->tags);
+        $this->assertContains(getenv('KBC_COMPONENTID'), $manifest->tags);
+    }
+
+    public function testPackerEmptyDirs()
+    {
+        // create data dirs
+        $fs = new Filesystem();
+        $inputTablesDir = sys_get_temp_dir() . '/input' . uniqid();
+        $outputFilesDir = sys_get_temp_dir() . '/output' . uniqid();
+        $fs->mkdir([$outputFilesDir, $inputTablesDir . '/323428022_comments/']);
+
+        $fs->dumpFile($inputTablesDir . '/323428022_comments.manifest', <<< EOF
+{
+    "id": 323428022,
+    "name": "comments",
+    "created": "2017-10-10T15:46:12+0200",
+    "is_public": false,
+    "is_encrypted": true,
+    "is_sliced": true,
+    "tags": [],
+    "max_age_days": 180,
+    "size_bytes": 0
+}
+EOF
+        );
+
+        $app = new App();
+        $app->run($inputTablesDir, $outputFilesDir);
+
+        $this->assertCount(2, (new Finder())->files()->in($outputFilesDir));
+        $zipFiles = (new Finder())->files()->name('*.zip')->in($outputFilesDir);
+        $this->assertCount(1, $zipFiles);
+
+        $filesIterator = $zipFiles->getIterator();
+        $filesIterator->rewind();
+        $zip = new \ZipArchive();
+        if ($zip->open($filesIterator->current()->getRealPath()) !== true) {
+            throw new \Exception('Cannot open created zip package.');
+        }
+        $this->assertEquals(1, $zip->numFiles);
 
         // manifest
         $manifestFiles = (new Finder())->files()->in($outputFilesDir)->name('*.manifest');
