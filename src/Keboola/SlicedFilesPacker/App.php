@@ -50,23 +50,12 @@ class App
         return (new JsonDecode())->decode(file_get_contents($iterator->current()->getRealPath()), JsonEncoder::FORMAT);
     }
 
-    private function getDataFiles($inputFilesFolderPath, $fileId)
+    private function getDataFiles($inputFilesFolderPath, $fileId) : Finder
     {
-        $legacyFiles = (new Finder())
+        $newFiles = (new Finder())
             ->files()
-            ->in($inputFilesFolderPath)
-            ->name(sprintf('%s_*', $fileId))
-            ->notName('*.manifest');
-        $legacyFiles = iterator_to_array($legacyFiles);
-        try {
-            $newFiles = (new Finder())
-                ->files()
-                ->in($inputFilesFolderPath . '/' . sprintf('%s_*', $fileId));
-            $newFiles = iterator_to_array($newFiles);
-        } catch (\InvalidArgumentException $e) {
-            $newFiles = [];
-        }
-        return array_merge($legacyFiles, $newFiles);
+            ->in($inputFilesFolderPath . '/' . sprintf('%s_*', $fileId));
+        return $newFiles;
     }
 
     private function createManifestFile($zipFilePath)
