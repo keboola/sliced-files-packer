@@ -22,10 +22,18 @@ class App
         $zip->open($zipFilePath, \ZipArchive::CREATE);
 
         foreach ($this->getDataFiles($inputFilesFolderPath, $fileManifest->id) as $dataFile) {
-            if (!$zip->addFile($dataFile->getRealPath(), $dataFile->getRelativePathname())) {
-                throw new \Exception(
-                    sprintf('Cannot add %s to package', $dataFile->getRealPath())
-                );
+            if ($dataFile->isDir()) {
+                if (!$zip->addEmptyDir($dataFile->getFilename())) {
+                    throw new \Exception(
+                        sprintf('Cannot add %s to package', $dataFile->getRealPath())
+                    );
+                }
+            } else {
+                if (!$zip->addFile($dataFile->getRealPath(), $dataFile->getRelativePathname())) {
+                    throw new \Exception(
+                        sprintf('Cannot add %s to package', $dataFile->getRealPath())
+                    );
+                }
             }
         }
         $zip->close();
@@ -50,23 +58,14 @@ class App
         return (new JsonDecode())->decode(file_get_contents($iterator->current()->getRealPath()), JsonEncoder::FORMAT);
     }
 
-    private function getDataFiles($inputFilesFolderPath, $fileId)
+    private function getDataFiles($inputFilesFolderPath, $fileId) : Finder
     {
-        $legacyFiles = (new Finder())
-            ->files()
+        $newFiles = (new Finder())
             ->in($inputFilesFolderPath)
-            ->name(sprintf('%s_*', $fileId))
-            ->notName('*.manifest');
-        $legacyFiles = iterator_to_array($legacyFiles);
-        try {
-            $newFiles = (new Finder())
-                ->files()
-                ->in($inputFilesFolderPath . '/' . sprintf('%s_*', $fileId));
-            $newFiles = iterator_to_array($newFiles);
-        } catch (\InvalidArgumentException $e) {
-            $newFiles = [];
-        }
-        return array_merge($legacyFiles, $newFiles);
+            ->notName('*.manifest')
+            ->path($fileId)
+        ;
+        return $newFiles;
     }
 
     private function createManifestFile($zipFilePath)
