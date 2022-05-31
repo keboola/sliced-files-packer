@@ -30,3 +30,6 @@ Component expects one sliced file as input. Otherwise user error is returned.
 
 
 `docker-compose run --rm dev`
+## License
+
+MIT licensed, see [LICENSE](./LICENSE) file.
